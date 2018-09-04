@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+
+<project name="JHotDraw" default="main" basedir=".">
+
+  <property name="build.classes" value="${dest.dir}"/>
+  <property name="build.jar" value="jhotdraw.jar"/>
+
+  <property name="src.dir" value="${dest.dir}/src"/>
+  <property name="images.dir" value="CH/ifa/draw/images"/>
+  <property name="javadraw.images.dir" value="CH/ifa/draw/samples/javadraw/sampleimages"/>
+  <property name="pert.images.dir" value="CH/ifa/draw/samples/pert/images"/>
+
+  <property name="javadoc.dir" value="${dest.dir}/javadoc"/>
+  <property name="mk.dir" value="${dest.dir}/build"/>
+
+  <property name="javac.deprecation" value="off"/>
+  <property name="javac.includes" value="**/*.java"/>
+
+  <property name="manifest.name" value="JHotdraw.mf"/>
+
+  <!-- Give user a chance to override without editing this file
+       (and without typing -D each time it compiles it -->
+  <property file="${user.home}/.ant.properties" />
+
+  <!-- =================================================================== -->
+  <!-- Builds a complete package with all files from scratch               -->
+  <!-- =================================================================== -->
+  <target name="all" depends="clean, main, javadocs">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Builds a package with all essential files                           -->
+  <!-- =================================================================== -->
+  <target name="main" depends="compile, copyResources, jar">
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source code                                            -->
+  <!-- =================================================================== -->
+  <target name="compile">
+    <javac srcdir="${src.dir}"
+           destdir="${build.classes}"
+           debug="${javac.debug}"
+           deprecation="${javac.deprecation}"
+		   includes="${javac.includes}"
+           optimize="${javac.optimize}" >
+    </javac>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Generates JavaDoc                                                   -->
+  <!-- =================================================================== -->
+  <target name="javadocs">
+    <available property="use.versiondoclet" classname="org.jhotdraw.tools.versiondoclet.VersionDoclet"/>
+    <antcall target="standard_javadocs"/>
+    <antcall target="versiondoclet_javadocs"/>
+  </target>
+
+  <target name="standard_javadocs" unless="use.versiondoclet">
+    <mkdir dir="${javadoc.dir}"/>
+    <javadoc sourcepath="${src.dir}"
+      destdir="${javadoc.dir}"
+      classpath="${dest.dir}"
+      author="false"
+      version="true"
+      packagenames="CH.*">
+    </javadoc>
+  </target>
+
+  <target name="versiondoclet_javadocs" if="use.versiondoclet">
+    <mkdir dir="${javadoc.dir}"/>
+    <javadoc sourcepath="${src.dir}"
+      destdir="${javadoc.dir}"
+      classpath="${dest.dir}"
+      author="false"
+      version="true"
+      packagenames="CH.*">
+      <doclet name="org.jhotdraw.tools.versiondoclet.VersionDoclet">
+        <param name="-versionfile" value="${mk.dir}/${manifest.name}"/>
+        <param name="-version" value=""/>
+      </doclet>
+    </javadoc>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Style check                                                         -->
+  <!-- =================================================================== -->
+<!--
+  <taskdef name="checkstyle" classname="com.puppycrawl.tools.checkstyle.CheckStyleTask"/>
+  <target name="stylecheck">
+      <checkstyle allowtabs="yes"
+              allownoauthor="yes"
+              maxlinelen="100"
+              headerfile="headerfile.txt"
+              headerignoreline="2"
+              relaxjavadoc="yes"
+              parampattern="."
+              constpattern="."
+              staticpattern="."
+              memberpattern=".">
+          <fileset dir="${src.dir}" includes="**/*.java"/>
+      </checkstyle>
+  </target>
+-->
+  <!-- =================================================================== -->
+  <!-- Copies the resources into the build target directory                -->
+  <!-- Resources are non-code that needs to be packed into some jar file   -->
+  <!-- in their package structure, such as .gif, .properties, .html, etc.  -->
+  <!-- =================================================================== -->
+  <target name="copyResources">
+    <copy toDir="${dest.dir}">
+      <fileset dir="${src.dir}">
+         <include name ="**/*.gif" />
+         <include name ="**/*.html" />
+      </fileset>
+    </copy>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Cleans up generated stuff                                           -->
+  <!-- =================================================================== -->
+  <target name="clean">
+    <delete dir="${dest.dir}/CH"/>
+    <delete dir="${javadoc.dir}"/>
+    <delete file="${dest.dir}/${build.jar}"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- The next section defines the Jar file layout.                       -->
+  <!-- =================================================================== -->
+  <target name="jar" depends="compile, copyResources">
+    <jar jarfile="${dest.dir}/${build.jar}"
+         basedir="${build.classes}"
+         includes="CH/**"
+         manifest="${mk.dir}/${manifest.name}"
+        >
+	</jar>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Run examples (and compile if necessary).                            -->
+  <!-- =================================================================== -->
+  <target name="javadraw" depends="main">
+     <java classname="CH.ifa.draw.samples.javadraw.JavaDrawApp" fork="yes" classpath="${classpath};../jhotdraw.jar">
+     </java>
+  </target>
+
+  <target name="pert" depends="main">
+     <java classname="CH.ifa.draw.samples.pert.PertApp" fork="yes" classpath="${classpath}};../jhotdraw.jar">
+     </java>
+  </target>
+
+  <target name="net" depends="main">
+     <java classname="CH.ifa.draw.samples.net.NetApp" fork="yes" classpath="${classpath}};../jhotdraw.jar">
+     </java>
+  </target>
+
+  <target name="nothing" depends="main">
+     <java classname="CH.ifa.draw.samples.nothing.NothingApp" fork="yes" classpath="${classpath}};../jhotdraw.jar">
+     </java>
+  </target>
+</project>
